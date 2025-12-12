@@ -2,14 +2,44 @@
 
 import { useAuth } from "@/app/lib/AuthContext";
 import { updateProfile } from "firebase/auth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { db } from "@/app/lib/firebase";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 export default function Profile() {
   const { user } = useAuth();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [address, setAddress] = useState({
+    street: "",
+    city: "",
+    zipCode: ""
+  });
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user?.uid) {
+        try {
+          const snapshot = await getDoc(doc(db, "users", user.uid));
+          if (snapshot.exists()) {
+            const data = snapshot.data();
+            if (data.address) {
+              setAddress(data.address);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -17,18 +47,33 @@ export default function Profile() {
     const formData = new FormData(e.currentTarget);
     const displayName = formData.get("displayName") as string;
     const photoURL = formData.get("photoURL") as string;
+    const street = formData.get("street") as string;
+    const city = formData.get("city") as string;
+    const zipCode = formData.get("zipCode") as string;
 
     if (user) {
-      updateProfile(user, {
-        displayName: displayName,
-        photoURL: photoURL,
-      })
-        .then(() => {
-          setSuccess("Profile updated successfully!");
-        })
-        .catch((error) => {
-          setError(error.message);
+      try {
+        await updateProfile(user, {
+          displayName: displayName,
+          photoURL: photoURL,
         });
+
+        await setDoc(doc(db, "users", user.uid), {
+          address: {
+            street: street,
+            city: city,
+            zipCode: zipCode
+          }
+        });
+
+        setSuccess("Profile updated successfully!");
+      } catch (error: any) {
+        if (error.code === 'permission-denied') {
+          setError("You don't have permission to update this profile. Please make sure you're logged in.");
+        } else {
+          setError(error.message);
+        }
+      }
     }
   };
 
@@ -71,32 +116,35 @@ export default function Profile() {
               </div>
             )}
 
-            <div>
-              <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
-                Display Name
-              </label>
-              <input
-                type="text"
-                id="displayName"
-                name="displayName"
-                defaultValue={user?.displayName || ''}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Enter your display name"
-              />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
+                  Display Name
+                </label>
+                <input
+                  type="text"
+                  id="displayName"
+                  name="displayName"
+                  defaultValue={user?.displayName || ''}
+                  disabled={loading}
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100"
+                  placeholder="Enter your display name"
+                />
+              </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email (read-only)
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={user?.email || ''}
-                readOnly
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-600 cursor-not-allowed sm:text-sm"
-              />
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email (read-only)
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={user?.email || ''}
+                  readOnly
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-600 cursor-not-allowed sm:text-sm"
+                />
+              </div>
             </div>
 
             <div>
@@ -108,13 +156,67 @@ export default function Profile() {
                 id="photoURL"
                 name="photoURL"
                 defaultValue={user?.photoURL || ''}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                disabled={loading}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100"
                 placeholder="https://example.com/photo.jpg"
               />
               <p className="mt-1 text-sm text-gray-500">Enter a URL to your profile photo</p>
             </div>
 
-            <div className="space-y-4">
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Address Information</h3>
+
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="street" className="block text-sm font-medium text-gray-700 mb-1">
+                    Street Address
+                  </label>
+                  <input
+                    type="text"
+                    id="street"
+                    name="street"
+                    defaultValue={address.street}
+                    disabled={loading}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100"
+                    placeholder="123 Main St"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      id="city"
+                      name="city"
+                      defaultValue={address.city}
+                      disabled={loading}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100"
+                      placeholder="New York"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">
+                      Zip Code
+                    </label>
+                    <input
+                      type="text"
+                      id="zipCode"
+                      name="zipCode"
+                      defaultValue={address.zipCode}
+                      disabled={loading}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100"
+                      placeholder="10001"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t pt-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">User ID</label>
                 <p className="mt-1 text-sm text-gray-600 font-mono">{user?.uid}</p>
@@ -134,9 +236,10 @@ export default function Profile() {
 
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              disabled={loading}
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
             >
-              Update Profile
+              {loading ? 'Loading...' : 'Update Profile'}
             </button>
           </form>
         </div>
