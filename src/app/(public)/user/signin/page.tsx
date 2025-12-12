@@ -23,7 +23,16 @@ export default function SignInForm() {
     setPersistence(auth, browserSessionPersistence)
       .then(() => {
         signInWithEmailAndPassword(auth, email, password)
-          .then(() => {
+          .then((userCredential) => {
+            if (!userCredential.user.emailVerified) {
+              setError("Please verify your email before signing in. Check your inbox for the verification link.");
+              auth.signOut();
+              setTimeout(() => {
+                router.push('/user/verify');
+              }, 2000);
+              return;
+            }
+
             if (returnUrl) {
               router.push(returnUrl);
             } else {

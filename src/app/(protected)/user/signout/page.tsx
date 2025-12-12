@@ -3,23 +3,33 @@
 import { signOut } from "firebase/auth";
 import { getAuth } from 'firebase/auth';
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export default function SignOut() {
   const auth = getAuth();
   const router = useRouter();
 
-  useEffect(() => {
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     signOut(auth).then(() => {
       router.push('/');
     });
-  }, [auth, router]);
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Signing out...</h2>
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+      <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Sign Out</h2>
+        <p className="text-gray-600 mb-6 text-center">
+          Are you sure you want to sign out?
+        </p>
+        <form onSubmit={onSubmit}>
+          <button
+            type="submit"
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition"
+          >
+            Sign Out
+          </button>
+        </form>
       </div>
     </div>
   );

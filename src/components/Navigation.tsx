@@ -13,7 +13,30 @@ export default function Navigation() {
   return (
     <nav className="w-64 bg-gray-900 text-white p-6 flex flex-col">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold">Quiz App</h1>
+        <h1 className="text-2xl font-bold mb-4">Quiz App</h1>
+        {user && (
+          <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
+            {user.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt="Profile"
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
+                <svg className="w-6 h-6 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold truncate">
+                {user.displayName || 'User'}
+              </p>
+              <p className="text-xs text-gray-400 truncate">{user.email}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex-1">
