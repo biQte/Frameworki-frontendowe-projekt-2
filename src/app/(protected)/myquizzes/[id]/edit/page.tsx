@@ -164,7 +164,7 @@ export default function EditQuiz() {
 
   const handleEditQuestion = (id: string, updates: Partial<Question>) => {
     setQuestions(questions.map(q =>
-      q.id === id ? { ...q, ...updates } : q
+      q.id === id ? { ...q, ...updates } as Question : q
     ));
   };
 
