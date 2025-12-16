@@ -3,9 +3,9 @@
 import { signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "firebase/auth";
 import { getAuth } from 'firebase/auth';
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 
-export default function SignInForm() {
+function SignInContent() {
   const auth = getAuth();
   const params = useSearchParams();
   const router = useRouter();
@@ -105,5 +105,13 @@ export default function SignInForm() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>}>
+      <SignInContent />
+    </Suspense>
   );
 }
