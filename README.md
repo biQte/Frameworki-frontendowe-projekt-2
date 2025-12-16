@@ -1,36 +1,128 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend Labs - Quiz Application
 
-## Getting Started
+Projekt aplikacji quizowej stworzony w ramach laboratoriów z frameworków frontendowych.
 
-First, run the development server:
+## 🔗 Live Demo
+
+**Link:** [Vercel](https://frameworki-frontendowe-projekt-2-nhiu7mio0.vercel.app)
+
+## 📋 Opis projektu
+
+Aplikacja quizowa z pełnym systemem autentykacji i zarządzania quizami. Użytkownicy mogą tworzyć własne quizy z różnymi typami pytań, zarządzać swoim profilem oraz rozwiązywać quizy demonstracyjne.
+
+## ✨ Funkcjonalności
+
+### Autentykacja (Lab 7-8)
+- Rejestracja i logowanie użytkowników
+- Weryfikacja email
+- Zarządzanie profilem (displayName, photoURL, adres)
+- Zmiana hasła
+- Chronione trasy
+
+### System Quizów (Lab 9 + rozszerzenia)
+- Tworzenie i edycja quizów
+- 4 typy pytań:
+  - Odpowiedź tekstowa
+  - Jednokrotny wybór (Single Choice)
+  - Wielokrotny wybór (Multiple Choice)
+  - Prawda/Fałsz
+- Zarządzanie pytaniami (dodawanie, edycja, usuwanie)
+- Automatyczne liczenie pytań
+
+### Komponenty Demo (Lab 7)
+- SingleChoice - pytania z jedną poprawną odpowiedzią
+- MultipleChoice - pytania z wieloma poprawnymi odpowiedziami
+- FillInBlanks - uzupełnianie luk w zdaniach
+- MatchPairs - dopasowywanie par
+
+### Wizualizacja Danych (Lab 6)
+- Komponent LineChart (SVG)
+
+## 🛠️ Technologie
+
+- **Framework:** Next.js 16 (App Router)
+- **Język:** TypeScript
+- **Stylowanie:** Tailwind CSS v4
+- **Baza danych:** Firebase Firestore
+- **Autentykacja:** Firebase Authentication
+- **Testy E2E:** Playwright
+
+## 🚀 Uruchomienie projektu
+
+### Wymagania
+- Node.js (v18+)
+- Konto Firebase
+
+### Instalacja
 
 ```bash
+# Klonowanie repozytorium
+git clone https://github.com/biQte/Frameworki-frontendowe-projekt-2.git
+cd Frameworki-frontendowe-projekt-2
+
+# Instalacja zależności
+npm install
+
+# Konfiguracja Firebase
+# Stwórz plik .env.local i dodaj swoje dane Firebase:
+NEXT_PUBLIC_API_KEY=your-api-key
+NEXT_PUBLIC_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_PROJECT_ID=your-project-id
+NEXT_PUBLIC_STORAGE_BUCKET=your-project.appspot.com
+NEXT_PUBLIC_MESSAGING_SENDER_ID=your-sender-id
+NEXT_PUBLIC_APP_ID=your-app-id
+
+# Uruchomienie w trybie deweloperskim
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Aplikacja będzie dostępna pod adresem `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Firebase Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Utwórz projekt w [Firebase Console](https://console.firebase.google.com)
+2. Włącz **Authentication** → Email/Password
+3. Utwórz **Firestore Database** (test mode)
+4. Dodaj reguły bezpieczeństwa Firestore (patrz dokumentacja)
 
-## Learn More
+## 📝 Struktura projektu
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/
+│   ├── (public)/          # Publiczne strony (login, register)
+│   ├── (protected)/       # Chronione strony (profile, quizzes)
+│   └── lib/               # Firebase config, AuthContext
+├── components/
+│   ├── quiz/              # Komponenty quizów
+│   ├── Navigation.tsx     # Nawigacja
+│   └── Footer.tsx         # Stopka
+└── tests/                 # Testy Playwright
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🧪 Testowanie
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+# Instalacja Playwright
+npm install -D @playwright/test
+npx playwright install
 
-## Deploy on Vercel
+# Uruchomienie testów
+npm test
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Tryb interaktywny
+npm run test:ui
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Raport
+npm run test:report
+```
+
+## 📦 Build
+
+```bash
+# Build produkcyjny
+npm run build
+
+# Uruchomienie wersji produkcyjnej
+npm run start
+```
