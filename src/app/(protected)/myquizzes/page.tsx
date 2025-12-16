@@ -4,17 +4,19 @@ import { useAuth } from "@/app/lib/AuthContext";
 import { useState, useEffect } from "react";
 import { db } from "@/app/lib/firebase";
 import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 interface Quiz {
   id: string;
   title: string;
   description: string;
-  questions: number;
+  questions: any[];
   createdAt: any;
 }
 
 export default function MyQuizzes() {
   const { user } = useAuth();
+  const router = useRouter();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -49,17 +51,17 @@ export default function MyQuizzes() {
     const formData = new FormData(e.currentTarget);
 
     try {
-      await addDoc(collection(db, "quizzes"), {
+      const docRef = await addDoc(collection(db, "quizzes"), {
         userId: user?.uid,
         title: formData.get("title"),
         description: formData.get("description"),
-        questions: parseInt(formData.get("questions") as string),
+        questions: [],
         createdAt: new Date()
       });
 
       setShowAddForm(false);
       (e.target as HTMLFormElement).reset();
-      fetchQuizzes();
+      router.push(`/myquizzes/${docRef.id}/edit`);
     } catch (error) {
       console.error("Error adding quiz:", error);
     }
@@ -74,6 +76,10 @@ export default function MyQuizzes() {
         console.error("Error deleting quiz:", error);
       }
     }
+  };
+
+  const handleEdit = (quizId: string) => {
+    router.push(`/myquizzes/${quizId}/edit`);
   };
 
   if (loading) {
@@ -132,26 +138,11 @@ export default function MyQuizzes() {
                 />
               </div>
 
-              <div>
-                <label htmlFor="questions" className="block text-sm font-medium text-gray-700 mb-1">
-                  Number of Questions
-                </label>
-                <input
-                  type="number"
-                  id="questions"
-                  name="questions"
-                  required
-                  min="1"
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="5"
-                />
-              </div>
-
               <button
                 type="submit"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
               >
-                Create Quiz
+                Create Quiz & Add Questions
               </button>
             </form>
           </div>
@@ -178,10 +169,16 @@ export default function MyQuizzes() {
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{quiz.title}</h3>
                 <p className="text-gray-600 mb-4">{quiz.description}</p>
                 <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                  <span>{quiz.questions} questions</span>
+                  <span>{quiz.questions?.length || 0} questions</span>
                   <span>{new Date(quiz.createdAt?.toDate()).toLocaleDateString()}</span>
                 </div>
                 <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEdit(quiz.id)}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
+                  >
+                    Edit
+                  </button>
                   <button
                     onClick={() => handleDelete(quiz.id)}
                     className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition"
